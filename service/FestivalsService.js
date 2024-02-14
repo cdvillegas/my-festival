@@ -59,14 +59,18 @@ exports.get_festival = function(id) {
  **/
 exports.list_festivals = function() {
   return new Promise(function(resolve, reject) {
-    const festivalsCol = collection(db, 'festivals');
-    getDocs(festivalsCol)
+    getDocs(collection(db, 'festivals'))
       .then((querySnapshot) => {
-        const festivals = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        resolve(festivals);
+        if (querySnapshot.empty) {
+          console.log("No matching festivals found.");
+          resolve([]);
+        } else {
+          const festivals = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+          }));
+          resolve(festivals);
+        }
       })
       .catch((error) => {
         console.error("Error listing festivals: ", error);
@@ -74,26 +78,6 @@ exports.list_festivals = function() {
       });
   });
 };
-
-
-
-/**
- * List all shows for a specific festival
- *
- * id String The ID of the festival to list shows for
- * returns List
- **/
-exports.list_shows_by_festival = function(id) {
-  return new Promise(function(resolve, reject) {
-    var examples = {};
-    examples['application/json'] = [ "", "" ];
-    if (Object.keys(examples).length > 0) {
-      resolve(examples[Object.keys(examples)[0]]);
-    } else {
-      resolve();
-    }
-  });
-}
 
 
 /**

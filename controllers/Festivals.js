@@ -33,16 +33,6 @@ module.exports.list_festivals = function list_festivals (req, res, next) {
     });
 };
 
-module.exports.list_shows_by_festival = function list_shows_by_festival (req, res, next, id) {
-  Festivals.list_shows_by_festival(id)
-    .then(function (response) {
-      utils.writeJson(res, response);
-    })
-    .catch(function (response) {
-      utils.writeJson(res, response);
-    });
-};
-
 module.exports.optimize_festival_schedule = function optimize_festival_schedule (req, res, next, body, id) {
   Festivals.optimize_festival_schedule(body, id)
     .then(function (response) {
