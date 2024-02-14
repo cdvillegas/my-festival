@@ -1,0 +1,308 @@
+openapi: 3.0.0
+info:
+  title: Festival Scheduler API
+  description: API for building personalized festival schedules
+  version: 1.0.0
+servers:
+- url: /
+paths:
+  /festivals:
+    get:
+      tags:
+      - Festivals
+      summary: List all festivals
+      operationId: list_festivals
+      responses:
+        "200":
+          description: An array of festivals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FestivalRead'
+                x-content-type: application/json
+      x-swagger-router-controller: Festivals
+    post:
+      tags:
+      - Festivals
+      summary: Create a new festival
+      operationId: create_festival
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FestivalCreate'
+        required: true
+      responses:
+        "201":
+          description: Festival created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FestivalRead'
+        "400":
+          description: Invalid input
+      x-swagger-router-controller: Festivals
+  /festivals/{id}:
+    get:
+      tags:
+      - Festivals
+      summary: Get a specific festival by ID
+      operationId: get_festival
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the festival to retrieve
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: A specific festival
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FestivalRead'
+        "404":
+          description: Festival not found
+      x-swagger-router-controller: Festivals
+  /festivals/{id}/shows:
+    get:
+      tags:
+      - Festivals
+      summary: List all shows for a specific festival
+      operationId: list_shows_by_festival
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the festival to list shows for
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "200":
+          description: An array of shows for the specified festival
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShowRead'
+                x-content-type: application/json
+        "404":
+          description: Festival not found
+      x-swagger-router-controller: Festivals
+  /festivals/{id}/optimize:
+    post:
+      tags:
+      - Festivals
+      summary: Optimize a festival schedule based on ratings
+      operationId: optimize_festival_schedule
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the festival to optimize the schedule for
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Rating'
+        required: true
+      responses:
+        "200":
+          description: Optimization completed successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Schedule'
+                x-content-type: application/json
+        "400":
+          description: Invalid input
+        "404":
+          description: Festival not found
+      x-swagger-router-controller: Festivals
+  /shows:
+    get:
+      tags:
+      - Shows
+      summary: List all shows
+      operationId: list_shows
+      responses:
+        "200":
+          description: An array of shows
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShowRead'
+                x-content-type: application/json
+      x-swagger-router-controller: Shows
+    post:
+      tags:
+      - Shows
+      summary: Create a new show for a festival
+      operationId: create_show
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShowCreate'
+        required: true
+      responses:
+        "201":
+          description: Show created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowRead'
+        "400":
+          description: Invalid input
+      x-swagger-router-controller: Shows
+  /shows/{id}:
+    get:
+      tags:
+      - Shows
+      summary: Fetch a specific show
+      operationId: delete_show
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the show to fetch
+        required: true
+        style: simple
+        explode: false
+        schema:
+          type: string
+      responses:
+        "201":
+          description: Fetched show successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowRead'
+        "404":
+          description: Show not found
+      x-swagger-router-controller: Shows
+components:
+  schemas:
+    FestivalCreate:
+      required:
+      - end_date
+      - location
+      - name
+      - start_date
+      type: object
+      properties:
+        name:
+          type: string
+          example: Autumn Jazz Festival
+        location:
+          type: string
+          example: "Chicago, IL"
+        start_date:
+          type: string
+          format: date
+          example: 2024-10-05
+        end_date:
+          type: string
+          format: date
+          example: 2024-10-08
+    FestivalRead:
+      allOf:
+      - $ref: '#/components/schemas/FestivalCreate'
+      - type: object
+        properties:
+          id:
+            type: string
+            example: "123"
+    ShowCreate:
+      required:
+      - artist
+      - end_time
+      - festival_id
+      - start_time
+      type: object
+      properties:
+        festival_id:
+          type: string
+          example: "123"
+        artist:
+          type: string
+          example: The Lumineers
+        start_time:
+          type: string
+          format: date-time
+          example: 2024-10-06T15:00:00Z
+        end_time:
+          type: string
+          format: date-time
+          example: 2024-10-06T17:00:00Z
+    ShowRead:
+      allOf:
+      - $ref: '#/components/schemas/ShowCreate'
+      - type: object
+        properties:
+          id:
+            type: string
+            example: "456"
+    Rating:
+      required:
+      - festival_id
+      - rating
+      - show_id
+      type: object
+      properties:
+        show_id:
+          type: string
+          description: ID of the show being rated
+          example: "456"
+        festival_id:
+          type: string
+          description: ID of the festival the show belongs to
+          example: "123"
+        rating:
+          maximum: 5
+          minimum: 1
+          type: integer
+          description: Rating value from 1 to 5
+          example: 4
+    Schedule:
+      required:
+      - festival_id
+      - shows
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the schedule
+          example: "789"
+        festival_id:
+          type: string
+          description: ID of the festival this schedule belongs to
+          example: "123"
+        shows:
+          type: array
+          description: Collection of shows in the schedule
+          items:
+            $ref: '#/components/schemas/ShowRead'
+      example:
+        festival_id: "123"
+        shows:
+        - ""
+        - ""
+        id: "789"
